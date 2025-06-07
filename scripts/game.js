@@ -3,10 +3,10 @@ const ctx = canvas.getContext('2d');
 
 // Load assets
 const carImg = new Image();
-carImg.src = '/images/car.png';
+carImg.src = 'images/car.png';
 
 const bgImg = new Image();
-bgImg.src = '/images/background.png';
+bgImg.src = 'images/background.png';
 
 // Car object
 let car = {
