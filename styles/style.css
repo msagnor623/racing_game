@@ -1,0 +1,40 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+body {
+  margin: 0;
+  background: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#mobile-controls {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10;
+}
+
+#mobile-controls button {
+  font-size: 30px;
+  padding: 10px 20px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 2px 2px 5px #222;
+}
