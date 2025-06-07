@@ -44,6 +44,11 @@ let keys = {};
 document.addEventListener('keydown', e => keys[e.code] = true);
 document.addEventListener('keyup', e => keys[e.code] = false);
 
+// Prevent default long-press behavior on mobile
+document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+});
+
 // Mobile controls
 document.getElementById('leftBtn').addEventListener('touchstart', () => moveLeft = true);
 document.getElementById('leftBtn').addEventListener('touchend', () => moveLeft = false);
@@ -75,15 +80,20 @@ function resizeCanvas() {
     }
 }
 
-function update() {
+function update(deltaTime = 1) {
+    const scrollSpeed = 2 * deltaTime;
+    scrollOffset += scrollSpeed;
+
     // Movement input
-    if (moveLeft) car.x -= 3;
-    if (moveRight) car.x += 3;
+    if (moveLeft) car.x -= 3 * deltaTime;
+    if (moveRight) car.x += 3 * deltaTime;
+
+    car.x += car.velocityX * deltaTime;
 
     // Gravity and vertical movement
     if (!car.onGround) {
-        car.velocityY += gravity;
-        car.y += car.velocityY;
+        car.velocityY += gravity * deltaTime;
+        car.y += car.velocityY * deltaTime;
         if (car.y >= car.carStartY) {
             car.y = car.carStartY;
             car.onGround = true;
@@ -110,7 +120,7 @@ function update() {
 
     // Move obstacle left with world scroll
     obstacles.forEach((obstacle) => {
-        obstacle.x -= 2;
+        obstacle.x -= scrollSpeed;
         // ...
     });
 
@@ -129,7 +139,7 @@ function update() {
 
 
     obstacles.forEach((obstacle) => {
-        obstacle.x -= 2;
+        obstacle.x -= scrollSpeed;
 
         if (
             !obstacle.hit &&
@@ -153,17 +163,18 @@ function update() {
         }
     }
 
-
-    // Background scroll
-    scrollOffset += 2;
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background looping
-    ctx.drawImage(bgImg, -(scrollOffset % canvas.width), 0, canvas.width, canvas.height);
-    ctx.drawImage(bgImg, canvas.width - (scrollOffset % canvas.width), 0, canvas.width, canvas.height);
+    const bgWidth = canvas.width; // or use bgImg.width if your image has a fixed width
+
+    const bgX = -(scrollOffset % bgWidth);
+    ctx.drawImage(bgImg, bgX, 0, bgWidth, canvas.height);
+    ctx.drawImage(bgImg, bgX + bgWidth, 0, bgWidth, canvas.height);
+
 
     // Car (with spin-out support)
     ctx.save();
@@ -183,11 +194,17 @@ function draw() {
 }
 
 
-function loop() {
-    update();
+let lastTime = 0;
+
+function loop(timestamp) {
+    const deltaTime = (timestamp - lastTime) / 16.67; // 60 FPS baseline
+    lastTime = timestamp;
+
+    update(deltaTime);
     draw();
     requestAnimationFrame(loop);
 }
+
 
 function setupTiltControl() {
     if (window.DeviceOrientationEvent && useTilt) {
@@ -210,6 +227,19 @@ function setupTiltControl() {
 
 // Initial setup
 window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-setupTiltControl();
-loop();
+
+
+let assetsLoaded = 0;
+
+function startGameWhenReady() {
+    assetsLoaded++;
+    if (assetsLoaded === 2) {
+        resizeCanvas();
+        setupTiltControl();
+        requestAnimationFrame(loop);
+    }
+}
+
+carImg.onload = startGameWhenReady;
+bgImg.onload = startGameWhenReady;
+

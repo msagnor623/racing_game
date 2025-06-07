@@ -38,3 +38,14 @@ body {
   border-radius: 10px;
   box-shadow: 2px 2px 5px #222;
 }
+
+button {
+  -webkit-user-select: none;  /* Safari */
+  -webkit-touch-callout: none; /* Disable callout, like tooltips */
+  user-select: none;
+  touch-action: none;          /* Prevent default gestures */
+  outline: none;               /* Remove outline highlight */
+  border: none;                /* Optional: remove borders if not needed */
+  background-color: transparent; /* Optional: your design */
+}
+
