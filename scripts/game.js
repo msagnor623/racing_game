@@ -2,11 +2,15 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Load assets
+const carImage = localStorage.getItem('selectedCar') || 'red.png';
+const backgroundImage = localStorage.getItem('selectedBG') || 'city.png';
+
 const carImg = new Image();
-carImg.src = 'images/car.png';
+carImg.src = `images/cars/${carImage}`;
 
 const bgImg = new Image();
-bgImg.src = 'images/background.png';
+bgImg.src = `images/backgrounds/${backgroundImage}`;
+
 
 // Car object
 let car = {
@@ -66,8 +70,8 @@ function resizeCanvas() {
     canvas.height = window.innerHeight;
 
     // Set car size and position relative to screen
-    car.width = canvas.width * 0.10;
-    car.height = canvas.height * 0.08;
+    car.width = canvas.width * 0.20;
+    car.height = canvas.height * 0.16;
     car.carStartY = canvas.height * 0.80;
     
     gravity = canvas.height * 0.0004;

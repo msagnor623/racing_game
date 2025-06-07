@@ -2,18 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Racecar Side-Scroller</title>
-  <link rel="stylesheet" href="styles/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Racing Game - Home</title>
+  <link rel="stylesheet" href="styles/index.css">
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="400"></canvas>
-  <div id="mobile-controls">
-  <button id="leftBtn">⟵</button>
-  <button id="jumpBtn">⤒</button>
-  <button id="rightBtn">⟶</button>
-</div>
 
-  <script src="scripts/game.js"></script>
+  <h1>Select Your Car and Background</h1>
+
+  <h2>Choose a Car</h2>
+  <div id="carOptions" class="selection-grid">
+    <div class="option" data-car="red.png"><img src="images/cars/red.png" alt="Red Car"></div>
+    <div class="option" data-car="blue.png"><img src="images/cars/blue.png" alt="Blue Car"></div>
+    <div class="option" data-car="green.png"><img src="images/cars/green.png" alt="Green Car"></div>
+  </div>
+
+  <h2>Choose a Background</h2>
+  <div id="bgOptions" class="selection-grid">
+    <div class="option" data-bg="city.png"><img src="images/backgrounds/city.png" alt="City"></div>
+    <div class="option" data-bg="desert.png"><img src="images/backgrounds/desert.png" alt="Desert"></div>
+    <div class="option" data-bg="forest.png"><img src="images/backgrounds/forest.png" alt="forest"></div>
+  </div>
+
+  <button id="startBtn">Start Game</button>
+
+  <script>
+    let selectedCar = null;
+    let selectedBG = null;
+
+    document.querySelectorAll('#carOptions .option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('#carOptions .option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedCar = opt.dataset.car;
+      });
+    });
+
+    document.querySelectorAll('#bgOptions .option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('#bgOptions .option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedBG = opt.dataset.bg;
+      });
+    });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (selectedCar && selectedBG) {
+        // Store selections in localStorage
+        localStorage.setItem('selectedCar', selectedCar);
+        localStorage.setItem('selectedBG', selectedBG);
+        window.location.href = 'game.html';
+      } else {
+        alert('Please select both a car and a background!');
+      }
+    });
+  </script>
+
 </body>
 </html>

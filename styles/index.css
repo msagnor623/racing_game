@@ -1,0 +1,36 @@
+    body { 
+        font-family: sans-serif; 
+        text-align: center; 
+        background: #f0f0f0; 
+        padding: 2rem; 
+    }
+
+    .selection-grid { 
+        display: flex; 
+        justify-content: center; 
+        gap: 2rem; 
+        flex-wrap: wrap; 
+    }
+
+    .option { 
+        cursor: pointer; 
+        border: 3px solid transparent; 
+        border-radius: 8px; padding: 5px; 
+    }
+
+    .option.selected { 
+        border-color: #007bff; 
+        background: #e0f0ff; 
+    }
+
+    img { 
+        width: 150px; 
+        height: auto; 
+    }
+
+    button { 
+        margin-top: 2rem; 
+        padding: 1rem 2rem; 
+        font-size: 1.2rem; 
+        cursor: pointer; 
+    }
