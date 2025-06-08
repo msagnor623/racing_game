@@ -10,12 +10,9 @@
 
   <h1>Select Your Car and Background</h1>
 
+
   <h2>Choose a Car</h2>
-  <div id="carOptions" class="selection-grid">
-    <div class="option" data-car="red.png"><img src="images/cars/red.png" alt="Red Car"></div>
-    <div class="option" data-car="blue.png"><img src="images/cars/blue.png" alt="Blue Car"></div>
-    <div class="option" data-car="green.png"><img src="images/cars/green.png" alt="Green Car"></div>
-  </div>
+    <div id="carOptions" class="selection-grid"></div>
 
   <h2>Choose a Background</h2>
   <div id="bgOptions" class="selection-grid">
@@ -26,37 +23,77 @@
 
   <button id="startBtn">Start Game</button>
 
-  <script>
-    let selectedCar = null;
-    let selectedBG = null;
+<script>
+  let selectedCarCol = null;
+  let selectedCarRow = null;
+  let selectedBG = null;
 
-    document.querySelectorAll('#carOptions .option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        document.querySelectorAll('#carOptions .option').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        selectedCar = opt.dataset.car;
-      });
-    });
+  const spriteSheet = new Image();
+  spriteSheet.src = 'images/cars/cars.png';
 
-    document.querySelectorAll('#bgOptions .option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        document.querySelectorAll('#bgOptions .option').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        selectedBG = opt.dataset.bg;
-      });
-    });
+  const columns = 5;
+  const rows = 6;
+  const spriteWidth = 1142 / columns;
+  const spriteHeight = 800 / rows;
 
-    document.getElementById('startBtn').addEventListener('click', () => {
-      if (selectedCar && selectedBG) {
-        // Store selections in localStorage
-        localStorage.setItem('selectedCar', selectedCar);
-        localStorage.setItem('selectedBG', selectedBG);
-        window.location.href = 'game.html';
-      } else {
-        alert('Please select both a car and a background!');
+  const carOptionsContainer = document.getElementById('carOptions');
+
+  spriteSheet.onload = () => {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = spriteWidth;
+        canvas.height = spriteHeight;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(
+          spriteSheet,
+          col * spriteWidth, row * spriteHeight,
+          spriteWidth, spriteHeight,
+          0, 0,
+          spriteWidth, spriteHeight
+        );
+
+        canvas.classList.add('option');
+        canvas.dataset.carCol = col;
+        canvas.dataset.carRow = row;
+
+        canvas.addEventListener('click', () => {
+          // Remove previous selections
+          document.querySelectorAll('#carOptions .option').forEach(o => o.classList.remove('selected'));
+          canvas.classList.add('selected');
+
+          selectedCarCol = col;
+          selectedCarRow = row;
+        });
+
+        carOptionsContainer.appendChild(canvas);
       }
+    }
+  };
+
+  // Background selection
+  document.querySelectorAll('#bgOptions .option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('#bgOptions .option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selectedBG = opt.dataset.bg;
     });
-  </script>
+  });
+
+  // Start button
+  document.getElementById('startBtn').addEventListener('click', () => {
+    if (selectedCarCol !== null && selectedCarRow !== null && selectedBG) {
+      localStorage.setItem('selectedCarCol', selectedCarCol);
+      localStorage.setItem('selectedCarRow', selectedCarRow);
+      localStorage.setItem('selectedBG', selectedBG);
+      window.location.href = 'game.html';
+    } else {
+      alert('Please select both a car and a background!');
+    }
+  });
+</script>
+
 
 </body>
 </html>

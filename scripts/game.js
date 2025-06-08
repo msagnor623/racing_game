@@ -2,11 +2,36 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Load assets
-const carImage = localStorage.getItem('selectedCar') || 'red.png';
-const backgroundImage = localStorage.getItem('selectedBG') || 'city.png';
+const selectedCol = parseInt(localStorage.getItem('selectedCarCol')) || 0;
+const selectedRow = parseInt(localStorage.getItem('selectedCarRow')) || 0;
 
-const carImg = new Image();
-carImg.src = `images/cars/${carImage}`;
+const carSpriteSheet = new Image();
+carSpriteSheet.src = 'images/cars/cars.png';
+
+const columns = 5;
+const rows = 6;
+const spriteWidth = 1142 / columns;
+const spriteHeight = 800 / rows;
+
+function drawCar() {
+  ctx.save();
+  ctx.translate(car.x + car.width / 2, car.y + car.height / 2);
+  if (car.spinOut) ctx.rotate(car.spinAngle);
+  ctx.drawImage(
+    carSpriteSheet,
+    selectedCol * spriteWidth,
+    selectedRow * spriteHeight,
+    spriteWidth,
+    spriteHeight,
+    -car.width / 2,
+    -car.height / 2,
+    car.width,
+    car.height
+  );
+  ctx.restore();
+}
+
+const backgroundImage = localStorage.getItem('selectedBG') || '0';
 
 const bgImg = new Image();
 bgImg.src = `images/backgrounds/${backgroundImage}`;
@@ -179,15 +204,7 @@ function draw() {
     ctx.drawImage(bgImg, bgX, 0, bgWidth, canvas.height);
     ctx.drawImage(bgImg, bgX + bgWidth, 0, bgWidth, canvas.height);
 
-
-    // Car (with spin-out support)
-    ctx.save();
-    ctx.translate(car.x + car.width / 2, car.y + car.height / 2);
-    if (car.spinOut) {
-        ctx.rotate(car.spinAngle);
-    }
-    ctx.drawImage(carImg, -car.width / 2, -car.height / 2, car.width, car.height);
-    ctx.restore();
+    drawCar();
 
     // Obstacles
     ctx.fillStyle = 'red';
@@ -244,6 +261,6 @@ function startGameWhenReady() {
     }
 }
 
-carImg.onload = startGameWhenReady;
+carSpriteSheet.onload = startGameWhenReady;
 bgImg.onload = startGameWhenReady;
 

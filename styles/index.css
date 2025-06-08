@@ -5,23 +5,24 @@
         padding: 2rem; 
     }
 
-    .selection-grid { 
-        display: flex; 
-        justify-content: center; 
-        gap: 2rem; 
-        flex-wrap: wrap; 
+    .selection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 16px;
+      padding: 20px;
+      justify-content: center;
     }
-
-    .option { 
-        cursor: pointer; 
-        border: 3px solid transparent; 
-        border-radius: 8px; padding: 5px; 
+    
+    .option {
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
     }
-
-    .option.selected { 
-        border-color: #007bff; 
-        background: #e0f0ff; 
+    
+    .option:hover {
+      border-color: #00f;
     }
+    
 
     img { 
         width: 150px; 
