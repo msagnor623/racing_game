@@ -1,99 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Racing Game - Home</title>
-  <link rel="stylesheet" href="styles/index.css">
-</head>
-<body>
 
-  <h1>Select Your Car and Background</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Racing Game - Home</title>
+    <link rel="stylesheet" href="styles/index.css">
+  </head>
+
+  <body>
+
+    <h1>Select Your Car and Background</h1>
 
 
-  <h2>Choose a Car</h2>
+    <h2>Choose a Car</h2>
     <div id="carOptions" class="selection-grid"></div>
 
-  <h2>Choose a Background</h2>
-  <div id="bgOptions" class="selection-grid">
-    <div class="option" data-bg="city.png"><img src="images/backgrounds/city.png" alt="City"></div>
-    <div class="option" data-bg="desert.png"><img src="images/backgrounds/desert.png" alt="Desert"></div>
-    <div class="option" data-bg="forest.png"><img src="images/backgrounds/forest.png" alt="forest"></div>
-  </div>
+    <h2>Choose a Background</h2>
+    <div id="bgOptions" class="selection-grid">
+      <div class="option" data-bg="city.png"><img src="images/backgrounds/city.png" alt="City"></div>
+      <div class="option" data-bg="desert.png"><img src="images/backgrounds/desert.png" alt="Desert"></div>
+      <div class="option" data-bg="forest.png"><img src="images/backgrounds/forest.png" alt="forest"></div>
+    </div>
 
-  <button id="startBtn">Start Game</button>
+    <button id="startBtn">Start Game</button>
 
-<script>
-  let selectedCarCol = null;
-  let selectedCarRow = null;
-  let selectedBG = null;
+    <script>
+      let selectedCarCol = null;
+      let selectedCarRow = null;
+      let selectedBG = null;
 
-  const spriteSheet = new Image();
-  spriteSheet.src = 'images/cars/cars.png';
-
-  const columns = 5;
-  const rows = 6;
-  const spriteWidth = 1142 / columns;
-  const spriteHeight = 800 / rows;
-
-  const carOptionsContainer = document.getElementById('carOptions');
-
-  spriteSheet.onload = () => {
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < columns; col++) {
-        const canvas = document.createElement('canvas');
-        canvas.width = spriteWidth;
-        canvas.height = spriteHeight;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(
-          spriteSheet,
-          col * spriteWidth, row * spriteHeight,
-          spriteWidth, spriteHeight,
-          0, 0,
-          spriteWidth, spriteHeight
-        );
-
-        canvas.classList.add('option');
-        canvas.dataset.carCol = col;
-        canvas.dataset.carRow = row;
-
-        canvas.addEventListener('click', () => {
-          // Remove previous selections
-          document.querySelectorAll('#carOptions .option').forEach(o => o.classList.remove('selected'));
-          canvas.classList.add('selected');
-
-          selectedCarCol = col;
-          selectedCarRow = row;
-        });
-
-        carOptionsContainer.appendChild(canvas);
+      const cars = ['ambulance', 'boneshaker', 'caboose', 'dinosaur_car',
+        'excavator', 'firetruck', 'gt_scorcher', 'hotrod', 'ice_creame_truck',
+        'jeep', 'kangaroo_kart', 'lightning_mcqueen', 'monster_truck', 'ninja_bike',
+        'octupus_jeep', 'police_car', 'racecar', 'super_fast_car', 'train', 'unicorn_unicycle',
+        'vespa', 'water_truck', 'x_car', 'yellow_car', 'zebra_zoomer']
+      
+      function capitalizeFirstLetter(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
       }
-    }
-  };
+      
+      const spriteSheet = new Image();
+      spriteSheet.src = 'images/cars/cars.png';
 
-  // Background selection
-  document.querySelectorAll('#bgOptions .option').forEach(opt => {
-    opt.addEventListener('click', () => {
-      document.querySelectorAll('#bgOptions .option').forEach(o => o.classList.remove('selected'));
-      opt.classList.add('selected');
-      selectedBG = opt.dataset.bg;
-    });
-  });
+      const columns = 5;
+      const rows = 6;
+      const spriteWidth = 1142 / columns;
+      const spriteHeight = 800 / rows;
 
-  // Start button
-  document.getElementById('startBtn').addEventListener('click', () => {
-    if (selectedCarCol !== null && selectedCarRow !== null && selectedBG) {
-      localStorage.setItem('selectedCarCol', selectedCarCol);
-      localStorage.setItem('selectedCarRow', selectedCarRow);
-      localStorage.setItem('selectedBG', selectedBG);
-      window.location.href = 'game.html';
-    } else {
-      alert('Please select both a car and a background!');
-    }
-  });
-</script>
+      const carOptionsContainer = document.getElementById('carOptions');
+
+      spriteSheet.onload = () => {
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < columns; col++) {
+            // Calculate the index for the cars array
+            const carIndex = row * columns + col;
+
+            // Ensure we don't go out of bounds of the cars array
+            if (carIndex >= cars.length) {
+              break; // Stop if we've displayed all cars
+            }
+
+            // Create a container div for each car option (image + name)
+            const carOptionDiv = document.createElement('div');
+            carOptionDiv.classList.add('option'); // Keep the 'option' class for styling
+            carOptionDiv.dataset.carCol = col;
+            carOptionDiv.dataset.carRow = row;
 
 
-</body>
+            const canvas = document.createElement('canvas');
+            canvas.width = spriteWidth;
+            canvas.height = spriteHeight;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(
+              spriteSheet,
+              col * spriteWidth, row * spriteHeight,
+              spriteWidth, spriteHeight,
+              0, 0,
+              spriteWidth, spriteHeight
+            );
+
+            // Create a paragraph for the car name
+            const carNameP = document.createElement('p');
+            carNameP.textContent = capitalizeFirstLetter(cars[carIndex].replace(/_/g, ' ')); // Get name from array and replace underscores
+            carNameP.classList.add('car-name'); // Add a class for potential styling
+
+
+            // Append canvas and name to the carOptionDiv
+            carOptionDiv.appendChild(canvas);
+            carOptionDiv.appendChild(carNameP);
+
+            carOptionDiv.addEventListener('click', () => {
+              // Remove previous selections
+              document.querySelectorAll('#carOptions .option').forEach(o => o.classList.remove('selected'));
+              carOptionDiv.classList.add('selected'); // Apply selected class to the parent div
+
+              selectedCarCol = col;
+              selectedCarRow = row;
+            });
+
+            carOptionsContainer.appendChild(carOptionDiv);
+          }
+        }
+      };
+
+      // Background selection
+      document.querySelectorAll('#bgOptions .option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          document.querySelectorAll('#bgOptions .option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          selectedBG = opt.dataset.bg;
+        });
+      });
+
+      // Start button
+      document.getElementById('startBtn').addEventListener('click', () => {
+        if (selectedCarCol !== null && selectedCarRow !== null && selectedBG) {
+          localStorage.setItem('selectedCarCol', selectedCarCol);
+          localStorage.setItem('selectedCarRow', selectedCarRow);
+          localStorage.setItem('selectedBG', selectedBG);
+          window.location.href = 'game.html';
+        } else {
+          alert('Please select both a car and a background!');
+        }
+      });
+    </script>
+
+
+  </body>
+
 </html>
