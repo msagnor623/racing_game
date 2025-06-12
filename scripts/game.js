@@ -1,17 +1,19 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+
 // Load assets
+
 const selectedCol = parseInt(localStorage.getItem('selectedCarCol')) || 0;
 const selectedRow = parseInt(localStorage.getItem('selectedCarRow')) || 0;
 
 const carSpriteSheet = new Image();
 carSpriteSheet.src = 'images/cars/cars.png';
 
-const columns = 5;
-const rows = 6;
-const spriteWidth = 1142 / columns;
-const spriteHeight = 800 / rows;
+const carSpriteColumns = 5;
+const carSpriteRows = 6;
+const spriteWidth = 1142 / carSpriteColumns;
+const spriteHeight = 800 / carSpriteRows;
 
 function drawCar() {
   ctx.save();
@@ -31,7 +33,8 @@ function drawCar() {
   ctx.restore();
 }
 
-const backgroundImage = localStorage.getItem('selectedBG') || '0';
+const backgroundImage = localStorage.getItem('selectedBG') || 'city.png';
+
 
 const bgImg = new Image();
 bgImg.src = `images/backgrounds/${backgroundImage}`;
@@ -39,7 +42,7 @@ bgImg.src = `images/backgrounds/${backgroundImage}`;
 
 // Car object
 let car = {
-    x: 100,
+    x: 0,
     y: 0,
     carStartY: 0,
     width: 50,
@@ -60,11 +63,12 @@ let useTilt = true;
 let scrollOffset = 0;
 let gravity = 0.5;
 let jumpForce = -10;
-let boostForce = 5;
+let acceleration = 5;
 
 let obstacles = [];
 let lastObstacleX = 0;
-const obstacleSpacing = 600; // distance between obstacles
+let obstacleSpace = 6
+const obstacleSpacing = car.width * obstacleSpace; // distance between obstacles
 
 
 let keys = {};
@@ -90,6 +94,18 @@ document.getElementById('jumpBtn').addEventListener('touchstart', e => {
     jumpRequested = true;
 });
 
+function sayLetter(letter, volume = 1, pitch = 1.5, voiceName = 'Flo (English (United States))') {
+  const voices = window.speechSynthesis.getVoices();
+  const msg = new SpeechSynthesisUtterance(letter);
+  const selectedVoice = voices.find(voice => voice.name === voiceName);
+  if (selectedVoice) {
+    msg.voice = selectedVoice;
+    msg.volume = volume;
+    msg.pitch = pitch;
+  }
+  window.speechSynthesis.speak(msg);
+}
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -97,11 +113,11 @@ function resizeCanvas() {
     // Set car size and position relative to screen
     car.width = canvas.width * 0.20;
     car.height = canvas.height * 0.16;
-    car.carStartY = canvas.height * 0.80;
+    car.carStartY = canvas.height * .73;
     
     gravity = canvas.height * 0.0004;
     jumpForce = -canvas.height * 0.02;
-    boostForce = canvas.width * 0.004;
+    acceleration = canvas.width * 0.004;
     
     // If car was on ground, update position to match new ground height
     if (car.onGround) {
@@ -137,10 +153,10 @@ function update(deltaTime = 1) {
         jumpRequested = false;
     }
 
-    // Boost left/right input
+    // accelerate left/right input
     car.velocityX = 0;
-    if (keys['ArrowRight'] && car.onGround) car.velocityX = boostForce;
-    if (keys['ArrowLeft'] && car.onGround) car.velocityX = -boostForce;
+    if (keys['ArrowRight'] && car.onGround) car.velocityX = acceleration;
+    if (keys['ArrowLeft'] && car.onGround) car.velocityX = -acceleration;
 
     car.x += car.velocityX;
 
@@ -157,10 +173,12 @@ function update(deltaTime = 1) {
     if (scrollOffset - lastObstacleX > obstacleSpacing) {
         const newObstacle = {
             x: canvas.width + scrollOffset,
-            y: car.carStartY + car.height - 50, // aligned with ground
-            width: 50,
+            y: car.carStartY + car.height * 0.9, // aligned with ground
+            width: canvas.width * 0.1,
             height: 50,
-            hit: false
+            hit: false,
+            jumped: false,
+            char: String.fromCharCode(65 + Math.floor(Math.random() * 26))
         };
         obstacles.push(newObstacle);
         lastObstacleX = scrollOffset;
@@ -172,13 +190,24 @@ function update(deltaTime = 1) {
 
         if (
             !obstacle.hit &&
-            car.x < obstacle.x + obstacle.width &&
+            car.x + car.width < obstacle.x + obstacle.width &&
             car.x + car.width > obstacle.x &&
             car.y < obstacle.y + obstacle.height &&
             car.y + car.height > obstacle.y
         ) {
-            car.spinOut = true;
             obstacle.hit = true;
+            car.x = 0;
+        }
+
+        if (
+            !obstacle.hit &&
+            !obstacle.jumped &&
+            car.x + car.width > obstacle.x + obstacle.width &&
+            car.y + car.height <= obstacle.y
+        ) {
+            obstacle.jumped = true;
+            car.spinOut = true; // optional: fun spin on success
+            sayLetter(obstacle.char);
         }
     });
 
@@ -195,6 +224,7 @@ function update(deltaTime = 1) {
 }
 
 function draw() {
+    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background looping
@@ -202,14 +232,16 @@ function draw() {
 
     const bgX = -(scrollOffset % bgWidth);
     ctx.drawImage(bgImg, bgX, 0, bgWidth, canvas.height);
-    ctx.drawImage(bgImg, bgX + bgWidth, 0, bgWidth, canvas.height);
+    ctx.drawImage(bgImg, bgX + bgWidth -1, 0, bgWidth, canvas.height);
 
     drawCar();
 
     // Obstacles
     ctx.fillStyle = 'red';
+    ctx.font = 'bold 60px Comic Sans MS';  // You can pick any font
+
     obstacles.forEach((obstacle) => {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.fillText(obstacle.char, obstacle.x, obstacle.y);
     });
 
 }
@@ -254,11 +286,14 @@ let assetsLoaded = 0;
 
 function startGameWhenReady() {
     assetsLoaded++;
+    sayLetter('', volume = 0)
     if (assetsLoaded === 2) {
         resizeCanvas();
         setupTiltControl();
         requestAnimationFrame(loop);
+        sayLetter('Lets Race', 1)
     }
+    console.log("Assets loaded")
 }
 
 carSpriteSheet.onload = startGameWhenReady;
