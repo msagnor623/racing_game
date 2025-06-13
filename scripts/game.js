@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+let waitingToStart = true;
 
 // Load assets
 
@@ -96,24 +97,79 @@ document.getElementById('jumpBtn').addEventListener('touchstart', e => {
     jumpRequested = true;
 });
 
+
+let availableVoices = [];
+let speechInitialized = false;
+
+resizeCanvas();
+
+document.addEventListener('click', () => {
+    if (!speechInitialized) {
+        availableVoices = speechSynthesis.getVoices();
+        if (availableVoices.length === 0) {
+            setTimeout(() => {
+                availableVoices = speechSynthesis.getVoices();
+            }, 100);
+        }
+        const silentMsg = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(silentMsg);
+        speechInitialized = true;
+        console.log("Speech synthesis initialized.");
+
+        if (assetsLoaded === 2) {
+            waitingToStart = false;
+            resizeCanvas();
+            setupTiltControl();
+            requestAnimationFrame(loop);
+            sayLetter('Lets Race', 2);
+            sayLetter('Jump over all the letters!');
+        }
+    }
+}, { once: true });
+
 function sayLetter(letter, volume = 1, pitch = 1, voiceName = 'Google US English') {
-  const msg = new SpeechSynthesisUtterance(letter);
-  const selectedVoice = availableVoices.find(
-    voice => voice.name.includes(voiceName) || voice.lang === "en-US"
-  );
-  if (selectedVoice) {
-    msg.voice = selectedVoice;
-  }
-  msg.volume = volume;
-  msg.pitch = pitch;
-  window.speechSynthesis.speak(msg);
-  console.log(msg.voice)
+    // Only attempt to speak if speech has been initialized by user interaction
+    if (!speechInitialized) {
+        console.warn("Speech synthesis not yet initialized by user interaction.");
+        return;
+    }
+
+    const msg = new SpeechSynthesisUtterance(letter);
+    const selectedVoice = availableVoices.find(
+        voice => voice.name.includes(voiceName) || voice.lang === "en-US"
+    );
+    if (selectedVoice) {
+        msg.voice = selectedVoice;
+    } else {
+        // Fallback if specific voice not found (e.g., 'Google US English' not on iOS)
+        // iOS often provides "Alex" (en-US), "Samantha" (en-US), etc.
+        // You might want to filter by lang: 'en-US' directly if voiceName fails.
+        const genericEnglishVoice = availableVoices.find(voice => voice.lang === "en-US");
+        if (genericEnglishVoice) {
+            msg.voice = genericEnglishVoice;
+        } else {
+            console.warn("No suitable English voice found. Using default.");
+        }
+    }
+    msg.volume = volume;
+    msg.pitch = pitch;
+
+    // Add error handling to see if speaking fails
+    msg.onerror = (event) => {
+        console.error("Speech synthesis error:", event.error);
+    };
+
+    window.speechSynthesis.speak(msg);
+    console.log("Speaking:", letter, "Voice:", msg.voice ? msg.voice.name : "Default");
 }
+
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    draw();
+    
     // Set car size and position relative to screen
     car.width = canvas.width * 0.20;
     car.height = canvas.height * 0.16;
@@ -238,6 +294,14 @@ function draw() {
     ctx.drawImage(bgImg, bgX, 0, bgWidth, canvas.height);
     ctx.drawImage(bgImg, bgX + bgWidth -1, 0, bgWidth, canvas.height);
 
+    if (waitingToStart) {
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${canvas.height * 0.15}px "Fredoka One", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Lets Race!', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
     drawCar();
 
     const fontSize = canvas.height * 0.15;
@@ -293,28 +357,17 @@ let assetsLoaded = 0;
 
 function startGameWhenReady() {
     assetsLoaded++;
-    sayLetter('', volume = 0)
     if (assetsLoaded === 2) {
-        resizeCanvas();
-        setupTiltControl();
-        requestAnimationFrame(loop);
-        sayLetter('Lets Race', 2)
-        sayLetter('Jump over all the letters!')
+        if (speechInitialized) {
+            resizeCanvas();
+            setupTiltControl();
+            requestAnimationFrame(loop);
+            sayLetter('Lets Race', 2);
+            sayLetter('Jump over all the letters!');
+        }
     }
-    console.log("Assets loaded")
+    console.log("Assets loaded:", assetsLoaded);
 }
-
-let availableVoices = [];
-
-document.addEventListener('click', () => {
-    availableVoices = speechSynthesis.getVoices();
-    if (availableVoices.length === 0) {
-        // fallback after delay for iOS
-        setTimeout(() => {
-            availableVoices = speechSynthesis.getVoices();
-        }, 100);
-    }
-}, { once: true });
 
 
 carSpriteSheet.onload = startGameWhenReady;
