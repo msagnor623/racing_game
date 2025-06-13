@@ -15,6 +15,8 @@ const carSpriteRows = 6;
 const spriteWidth = 1142 / carSpriteColumns;
 const spriteHeight = 800 / carSpriteRows;
 
+
+
 function drawCar() {
   ctx.save();
   ctx.translate(car.x + car.width / 2, car.y + car.height / 2);
@@ -94,16 +96,18 @@ document.getElementById('jumpBtn').addEventListener('touchstart', e => {
     jumpRequested = true;
 });
 
-function sayLetter(letter, volume = 1, pitch = 1.5, voiceName = 'Flo (English (United States))') {
-  const voices = window.speechSynthesis.getVoices();
+function sayLetter(letter, volume = 1, pitch = 1, voiceName = 'Google US English') {
   const msg = new SpeechSynthesisUtterance(letter);
-  const selectedVoice = voices.find(voice => voice.name === voiceName);
+  const selectedVoice = availableVoices.find(
+    voice => voice.name.includes(voiceName) || voice.lang === "en-US"
+  );
   if (selectedVoice) {
     msg.voice = selectedVoice;
-    msg.volume = volume;
-    msg.pitch = pitch;
   }
+  msg.volume = volume;
+  msg.pitch = pitch;
   window.speechSynthesis.speak(msg);
+  console.log(msg.voice)
 }
 
 function resizeCanvas() {
@@ -207,7 +211,7 @@ function update(deltaTime = 1) {
         ) {
             obstacle.jumped = true;
             car.spinOut = true; // optional: fun spin on success
-            sayLetter(obstacle.char);
+            sayLetter(obstacle.char.toLowerCase());
         }
     });
 
@@ -236,9 +240,12 @@ function draw() {
 
     drawCar();
 
+    const fontSize = canvas.height * 0.15;
+
+
     // Obstacles
     ctx.fillStyle = 'red';
-    ctx.font = 'bold 60px Comic Sans MS';  // You can pick any font
+    ctx.font = `bold ${fontSize}px "Fredoka One", sans-serif`;
 
     obstacles.forEach((obstacle) => {
         ctx.fillText(obstacle.char, obstacle.x, obstacle.y);
@@ -291,10 +298,24 @@ function startGameWhenReady() {
         resizeCanvas();
         setupTiltControl();
         requestAnimationFrame(loop);
-        sayLetter('Lets Race', 1)
+        sayLetter('Lets Race', 2)
+        sayLetter('Jump over all the letters!')
     }
     console.log("Assets loaded")
 }
+
+let availableVoices = [];
+
+document.addEventListener('click', () => {
+    availableVoices = speechSynthesis.getVoices();
+    if (availableVoices.length === 0) {
+        // fallback after delay for iOS
+        setTimeout(() => {
+            availableVoices = speechSynthesis.getVoices();
+        }, 100);
+    }
+}, { once: true });
+
 
 carSpriteSheet.onload = startGameWhenReady;
 bgImg.onload = startGameWhenReady;
